@@ -8,7 +8,7 @@ import {
 import { useRouter } from "expo-router";
 import * as ImagePicker from 'expo-image-picker';
 import { useState, useEffect } from "react"; 
-import { useImgStore } from "./store";
+import { useImgStore, useBubbyStore } from "./store";
 
 
 export default function ImageUploader() {
