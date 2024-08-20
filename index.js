@@ -18,12 +18,6 @@ const API_URL = "https://trefle.io/api/v1/plants/";
 const OTHER_URL = "https://trefle.io/api/v1/species/";
 const API_TOKEN = "4UEuFiWGKUD7Nl-vk4Tzic4nupf-S7VTddr5bau3WWs";
 
-const FILTER_URL = "https://trefle.io/api/v1/species?token=" 
-                    + API_TOKEN + "&filter[common_name]=";
-
-const OTHER_FILTER = "https://trefle.io/api/v1/plants/search?token="
-                    + API_TOKEN + "&q=";
-
 export default function App() {
   const [grape, noGrape] = useState(false);
   const [finding, setFinding] = useState(false);
