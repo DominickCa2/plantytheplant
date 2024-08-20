@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useImgStore, usePlantStore, useBubbyStore } from "./store";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import AppLoader from "./apploader";
 
 export default function InBetweenScreen() {
   const organs = ["auto", "leaf", "bark", "fruit", "flower"];
@@ -20,53 +21,80 @@ export default function InBetweenScreen() {
   const setPlants = usePlantStore(state => state.setPlant); 
   const { meep, setMeep } = useImgStore();
   const { bubby, setBubby } = useBubbyStore();
-  const [organ, setOrgan] = useState("");
+  const [organ, setOrgan] = useState("auto");
+  const [finding, setFinding] = useState(false);
 
   const API_KEY = "2b10IYefYkVQY8mBB8KF48UE0u";
-  const API_URL = "https://my-api.plantnet.org/v2/identify/all";
+  const API_URL = "https://my-api.plantnet.org/v2/identify/all"; 
 
-  const identifyPlant = async () => {
+  useEffect(() => {
+    const jupermuper = async () => {
+      // Add current plant to bubby (list of plant parts)
+      setBubby(prevbub => [...prevbub, {organ: organ, img: meep}]);
+
+      // newbub is most current bubby
+      if (!organ) {
+        Alert.alert("Big error", "No plant parts selected");
+        return;
+      }
+      const newbub = [...bubby, {organ: organ, img: meep}];
+      
+      if (!Array.isArray(newbub) || !newbub.length) {
+        Alert.alert("Error", "No plant parts selected");
+        return;
+      }
+
+      const parts = newbub.map(bub => bub.organ);
+      const imgs = newbub.map(bub => ({
+        uri: bub.img, 
+        name: 'image.jpg',
+        type: 'image/jpg'
+      }));
+      console.log(JSON.stringify(newbub[0]));
+      const formData = new FormData();
+      
+      for (let i = 0; i < parts.length; i++) {
+        formData.append('organs', parts[i]);
+        formData.append('images', imgs[i]);
+      }
+
+      console.log(formData);
+
+      try {
+        const params = {
+          "api-key": API_KEY, 
+          "include-related-images": true
+        }
+        const response = await axios.post(API_URL, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }, 
+          params: params
+        });
+        setPlants({
+          bobo: 'bigbobby',
+          ...response.data
+        });
+        router.push('/stuff');
+      }
+      catch (error) {
+        console.error("Failed to identify plant", error);
+        Alert.alert("Error", "Failed to identify plant");
+      }
+    }
+    if (finding) {
+      jupermuper();
+      setFinding(false);
+    }
+  }, [finding]);
+
+  const identifyPlant = () => {
     if (!meep) {
       Alert.alert("Error", "No image selected");
       return;
     }
-    necesitasHelp(false);
-    if (!Array.isArray(bubby)) {
-      Alert.alert("Error", "No plant parts selected");
-      return;
-    }
-    const parts = bubby.map(bub => bub.organ);
-    const imgs = bubby.map(bub => ({
-      uri: bub.img, 
-      name: 'image.jpg',
-      type: 'image/jpg'
-    }));
-
-    const formData = new FormData();
-    formData.append('organs', parts);
-    formData.append('images', imgs);
-
-    try {
-      const params = {
-        "api-key": API_KEY, 
-        "include-related-images": true
-      }
-      const response = await axios.post(API_URL, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }, 
-        params: params
-      });
-      setPlants({
-        bobo: 'bigbobby',
-        ...response.data
-      });
-      router.push('/stuff');
-    }
-    catch (error) {
-      console.error("Failed to identify plant", error);
-      Alert.alert("Error", "Failed to identify plant");
-    }
+    necesitasHelp(false); // don't upload another image
+    setFinding(true);
   }
 
   // upload another image
@@ -118,6 +146,7 @@ export default function InBetweenScreen() {
       <Button title="Identify Plant" onPress={identifyPlant} />
       <Text style={{textAlign: "center"}}>OR</Text>
       <Button title="Upload Another Image" onPress={() => necesitasHelp(true)}/>
+      {finding && <AppLoader />}
     </View>
   );
 }
