@@ -44,7 +44,7 @@ export default function App() {
         const thingy = res.data.data[0];
         if (!thingy) {
           console.log("Plant not found");
-          setPlants(null);
+          setPlants(null);    // see if this is still necessary later
           router.push('/stuff');
         }
 

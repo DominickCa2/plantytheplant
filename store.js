@@ -20,6 +20,19 @@ export const useImgStore = create(set => ({
 
 // hab part/img pairs (obj)
 export const useBubbyStore = create(set => ({
-  bubby: [],
-  setBubby: (data) => set({ bubby: data }),
+  bubby: [], 
+  addBubby: newbub => 
+    set(state => ({
+      bubby: [
+        ...state.bubby, 
+        {
+          organ: newbub.organ, 
+          img: newbub.img
+        }
+      ]
+    })),
+  clearBubby: () => 
+    set(state => ({
+      bubby: []
+    }))
 }));

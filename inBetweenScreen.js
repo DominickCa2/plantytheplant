@@ -12,6 +12,7 @@ import { useImgStore, usePlantStore, useBubbyStore } from "./store";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AppLoader from "./apploader";
+import ImageChooser from "./imageChooser";
 
 export default function InBetweenScreen() {
   const organs = ["auto", "leaf", "bark", "fruit", "flower"];
@@ -20,45 +21,42 @@ export default function InBetweenScreen() {
 
   const setPlants = usePlantStore(state => state.setPlant); 
   const { meep, setMeep } = useImgStore();
-  const { bubby, setBubby } = useBubbyStore();
+  const bubby = useBubbyStore((state) => state.bubby);
+  const addBubby = useBubbyStore((state) => state.addBubby);
+  const clearBubby = useBubbyStore((state) => state.clearBubby)
   const [organ, setOrgan] = useState("auto");
   const [finding, setFinding] = useState(false);
+  const [starbuck, setStarbuck] = useState(false);
 
   const API_KEY = "2b10IYefYkVQY8mBB8KF48UE0u";
   const API_URL = "https://my-api.plantnet.org/v2/identify/all"; 
 
+  // Actually identify the plant using the images
   useEffect(() => {
     const jupermuper = async () => {
-      // Add current plant to bubby (list of plant parts)
-      setBubby(prevbub => [...prevbub, {organ: organ, img: meep}]);
-
-      // newbub is most current bubby
       if (!organ) {
         Alert.alert("Big error", "No plant parts selected");
         return;
       }
-      const newbub = [...bubby, {organ: organ, img: meep}];
-      
-      if (!Array.isArray(newbub) || !newbub.length) {
+
+      if (!Array.isArray(bubby) || !bubby.length) {
         Alert.alert("Error", "No plant parts selected");
         return;
       }
 
-      const parts = newbub.map(bub => bub.organ);
-      const imgs = newbub.map(bub => ({
+      const parts = bubby.map(bub => bub.organ);
+      const imgs = bubby.map(bub => ({
         uri: bub.img, 
         name: 'image.jpg',
         type: 'image/jpg'
       }));
-      console.log(JSON.stringify(newbub[0]));
+      
       const formData = new FormData();
       
       for (let i = 0; i < parts.length; i++) {
         formData.append('organs', parts[i]);
         formData.append('images', imgs[i]);
       }
-
-      console.log(formData);
 
       try {
         const params = {
@@ -75,6 +73,10 @@ export default function InBetweenScreen() {
           bobo: 'bigbobby',
           ...response.data
         });
+        setMeep(null);
+        setOrgan("");
+        setStarbuck(false);
+        clearBubby();
         router.push('/stuff');
       }
       catch (error) {
@@ -84,7 +86,6 @@ export default function InBetweenScreen() {
     }
     if (finding) {
       jupermuper();
-      setFinding(false);
     }
   }, [finding]);
 
@@ -103,11 +104,12 @@ export default function InBetweenScreen() {
       organ: organ, 
       img: meep
     }
-    setMeep(null);
-    setOrgan("");
-    setBubby(prevbub => [...prevbub, newbub]);
-    if (pear) // if user wants to upload another image
-      router.push('/imageUploader');
+    addBubby(newbub);
+    // if user wants to upload another image
+    if (pear) { 
+      setMeep(null);
+      setStarbuck(true);
+    }
   }
 
   // list organs
@@ -121,8 +123,7 @@ export default function InBetweenScreen() {
             { opacity: pressed ? 0.7 : 1 }
           ]}
           onPress={() => {
-            setOrgan(butt)
-            console.log(butt);
+            setOrgan(butt);
           }} 
           key={butt}
         >
@@ -137,7 +138,6 @@ export default function InBetweenScreen() {
     <View style={styles.container}>
       {meep && (
         <Image source={{ uri: meep }} style={styles.img} />
-        // Change meep[0] later
       )}
       <Text style={styles.prompt}>Select Plant Part</Text>
       <View style={styles.subcontainer}>
@@ -147,6 +147,7 @@ export default function InBetweenScreen() {
       <Text style={{textAlign: "center"}}>OR</Text>
       <Button title="Upload Another Image" onPress={() => necesitasHelp(true)}/>
       {finding && <AppLoader />}
+      {starbuck && <ImageChooser />}
     </View>
   );
 }
