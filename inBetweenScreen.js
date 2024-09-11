@@ -12,7 +12,6 @@ import { useImgStore, usePlantStore, useBubbyStore } from "./store";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import AppLoader from "./apploader";
-import ImageChooser from "./imageChooser";
 
 export default function InBetweenScreen() {
   const organs = ["auto", "leaf", "bark", "fruit", "flower"];
@@ -26,7 +25,6 @@ export default function InBetweenScreen() {
   const clearBubby = useBubbyStore((state) => state.clearBubby)
   const [organ, setOrgan] = useState("auto");
   const [finding, setFinding] = useState(false);
-  const [starbuck, setStarbuck] = useState(false);
 
   const API_KEY = "2b10IYefYkVQY8mBB8KF48UE0u";
   const API_URL = "https://my-api.plantnet.org/v2/identify/all"; 
@@ -75,12 +73,12 @@ export default function InBetweenScreen() {
         });
         setMeep(null);
         setOrgan("");
-        setStarbuck(false);
         clearBubby();
         router.push('/stuff');
       }
       catch (error) {
         console.error("Failed to identify plant", error);
+        router.push("/")
         Alert.alert("Error", "Failed to identify plant");
       }
     }
@@ -108,7 +106,7 @@ export default function InBetweenScreen() {
     // if user wants to upload another image
     if (pear) { 
       setMeep(null);
-      setStarbuck(true);
+      router.push("./cameraThingy");
     }
   }
 
@@ -145,9 +143,8 @@ export default function InBetweenScreen() {
       </View>
       <Button title="Identify Plant" onPress={identifyPlant} />
       <Text style={{textAlign: "center"}}>OR</Text>
-      <Button title="Upload Another Image" onPress={() => necesitasHelp(true)}/>
+      <Button title="Take Another Picture" onPress={() => necesitasHelp(true)}/>
       {finding && <AppLoader />}
-      {starbuck && <ImageChooser />}
     </View>
   );
 }
