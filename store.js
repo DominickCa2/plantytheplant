@@ -12,6 +12,12 @@ export const useBobStore = create(set => ({
   setBob: (data) => set({ bob: data }),
 }));
 
+// de burger (identifier?)
+export const useBurgerStore = create(set => ({
+  burger: "",
+  setBurger: (data) => set({ burger: data }),
+}));
+
 // de image list
 export const useImgStore = create(set => ({
   meep: null,
