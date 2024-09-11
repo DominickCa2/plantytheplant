@@ -1,13 +1,12 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useImgStore } from "./store";
 import { useEffect } from 'react';
-import { View } from "react-native";
+import { View, Alert } from "react-native";
 
 export default function ImageChooser() {
   const { meep, setMeep } = useImgStore();
 
   useEffect(() => {
-    console.log("doing stuff");
     const dostuff = async () => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
