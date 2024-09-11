@@ -1,16 +1,26 @@
 import { useState, useRef, useEffect } from "react";
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { View, Text, Alert, Button, TouchableOpacity, StyleSheet } from 'react-native' 
+import { View, Alert, TouchableOpacity, StyleSheet } from 'react-native' 
 import * as Haptics from 'expo-haptics';
 import { useImgStore } from "./store";
 import { useRouter } from 'expo-router';
-import CheckImg from "./checkImg";
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons'; 
+import ImageChooser from "./imageChooser";
 
 export default function CameraThingy() {
   const cameraRef = useRef(null);
   const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState('back');
   const { meep, setMeep } = useImgStore();
   const router = useRouter();
+  const [squid, setSquid] = useState(false);
+
+  useEffect(() => {
+    if (meep) {
+      router.push("./checkImg");
+    }
+  }), []
 
   if (!permission) {
     return <View />;
@@ -47,7 +57,14 @@ export default function CameraThingy() {
     const picture = await cameraRef.current.takePictureAsync();
     console.log("Here's a picture: ");
     setMeep(picture.uri);
-    router.push("./checkImg");
+  }
+
+  function toggleCameraFacing() {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
+  }
+
+  function openPictures() {
+    setSquid(true);
   }
 
   return (
@@ -55,14 +72,28 @@ export default function CameraThingy() {
       <CameraView 
         ref={cameraRef}
         style={styles.cameraView}
+        facing={facing}
       >
         <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.galleryButton} 
+            onPress={openPictures}
+          >
+            <FontAwesome6 name="images" size={24} color="black" />
+          </TouchableOpacity>
           <TouchableOpacity 
             style={styles.cameraButton} 
             onPress={takePicture}
           />
+          <TouchableOpacity 
+            style={styles.flipButton} 
+            onPress={toggleCameraFacing}
+          >  
+            <MaterialIcons name="flip-camera-android" size={24} color="black" />
+          </TouchableOpacity>
         </View>
       </CameraView>
+      {squid && <ImageChooser />}
     </View>
   )
 }
@@ -74,8 +105,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flex: 1,
     backgroundColor: "transparent",
-    justifyContent: "flex-end", 
-    alignItems: "center"
+    justifyContent: "space-evenly", 
+    alignItems: "flex-end",
+    flexDirection: "row"
+  }, 
+  galleryButton: {
+    backgroundColor: "#9cf", 
+    padding: 11, 
+    marginBottom: 40, 
+    borderRadius: 25, 
+    width: 50, 
+    height: 50
   },
   cameraButton: {
     backgroundColor: "#fff", 
@@ -84,5 +124,13 @@ const styles = StyleSheet.create({
     borderRadius: 40, 
     width: 70, 
     height: 70
+  }, 
+  flipButton: {
+    backgroundColor: "#9cf", 
+    padding: 12, 
+    marginBottom: 40, 
+    borderRadius: 25, 
+    width: 50, 
+    height: 50
   }
 });
